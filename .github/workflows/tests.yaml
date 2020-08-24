@@ -1,0 +1,82 @@
+
+name: TESTS
+
+on:
+  workflow_run:
+    workflows:
+      - UPLOAD
+    types:
+      - completed
+
+env:
+  _DLA_DEBUG: '1'
+
+jobs:
+  download:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # see https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+          - {os: ubuntu-20.04}
+          - {os: ubuntu-18.04}
+          - {os: ubuntu-16.04}
+          - {os: macos-10.15}
+          # - {os: windows-2019, install-py: true}
+
+    steps:
+      - name: install python
+        if: ${{ matrix.install-py }}
+        # see https://github.com/actions/setup-python
+        uses: actions/setup-python@v2
+      - name: Fetch Code
+        # see https://github.com/actions/checkout
+        uses: actions/checkout@v2
+      - name: Fetch dummy artefact
+        # same as in `action.yml`
+        run: python3 download-artifact.py
+        env:
+          INPUT_ARTIFACTS_URL: ${{ github.event.workflow_run.artifacts_url }}
+          INPUT_ARTIFACT_NAME: dummy
+          INPUT_DOWNLOAD_PATH: '.'
+          INPUT_GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+      - name: Read dummy artefact
+        run: cat dummy
+        shell: bash
+
+  debug:
+    name: DEBUG
+    runs-on: ubuntu-latest
+    steps:
+      # see https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+      - run: echo "$CONTEXT"
+        name: github
+        env:
+          CONTEXT:  ${{ toJson(github) }}
+      - run: echo "$CONTEXT"
+        name: env
+        env:
+          CONTEXT:  ${{ toJson(env) }}
+      - run: echo "$CONTEXT"
+        name: runner
+        env:
+          CONTEXT:  ${{ toJson(runner) }}
+      - run: echo "$CONTEXT"
+        name: strategy
+        env:
+          CONTEXT:  ${{ toJson(strategy) }}
+      - run: echo "$CONTEXT"
+        name: matrix
+        env:
+          CONTEXT:  ${{ toJson(matrix) }}
+      - run: echo "$CONTEXT"
+        name: needs
+        env:
+          CONTEXT:  ${{ toJson(needs) }}
+      - run: echo "$CONTEXT"
+        name: secrets
+        env:
+          CONTEXT:  ${{ toJson(secrets) }}

@@ -1,0 +1,34 @@
+name: Download Artifact
+description: download artifact
+
+author: jkowalleck
+
+inputs:
+  artifacts-url:
+    description: Artifacts URL
+    required: true
+  name:
+    description: Artifact name
+    required: true
+  path:
+    description: Destination path
+    required: true
+    default: '.'
+  GITHUB_TOKEN:
+    description: GITHUB_TOKEN
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - run: python3 ${{ github.action_path }}/download-artifact.py
+      env:
+        INPUT_ARTIFACTS_URL: ${{ inputs.artifacts-url }}
+        INPUT_ARTIFACT_NAME: ${{ inputs.name }}
+        INPUT_DOWNLOAD_PATH: ${{ inputs.path }}
+        INPUT_GITHUB_TOKEN:  ${{ inputs.GITHUB_TOKEN }}
+      shell: bash
+
+branding:
+  icon: award
+  color: green

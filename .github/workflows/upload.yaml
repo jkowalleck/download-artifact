@@ -1,0 +1,71 @@
+
+name: UPLOAD
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  upload:
+    name: upoad
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate dummy artefact
+        run: date > dummy
+      - name: Artifact dummy
+        # see https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: dummy
+          path: dummy/
+          if-no-files-found: error
+  download:
+    name: test download
+    needs: upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch dummy
+        # see https://github.com/actions/download-artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: dummy
+          path: .
+      - name: read dummy
+        run: cat dummy
+  debug:
+    name: DEBUG
+    runs-on: ubuntu-latest
+    steps:
+      # see https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#contexts
+      - run: echo "$CONTEXT"
+        name: github
+        env:
+          CONTEXT:  ${{ toJson(github) }}
+      - run: echo "$CONTEXT"
+        name: env
+        env:
+          CONTEXT:  ${{ toJson(env) }}
+      - run: echo "$CONTEXT"
+        name: runner
+        env:
+          CONTEXT:  ${{ toJson(runner) }}
+      - run: echo "$CONTEXT"
+        name: strategy
+        env:
+          CONTEXT:  ${{ toJson(strategy) }}
+      - run: echo "$CONTEXT"
+        name: matrix
+        env:
+          CONTEXT:  ${{ toJson(matrix) }}
+      - run: echo "$CONTEXT"
+        name: needs
+        env:
+          CONTEXT:  ${{ toJson(needs) }}
+      - run: echo "$CONTEXT"
+        name: secrets
+        env:
+          CONTEXT:  ${{ toJson(secrets) }}
